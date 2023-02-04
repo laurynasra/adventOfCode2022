@@ -1,12 +1,17 @@
-use std::env;
+use clap::Parser;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
+#[derive(Parser, Debug)]
+struct Params {
+    path: String,
+}
+
 fn main() {
-    let args = env::args();
-    let path = args[0];
-    if let Ok(lines) = read_lines("./data.txt") {
+    let args = Params::parse();
+    let path = args.path;
+    if let Ok(lines) = read_lines(path) {
         let mut sums: Vec<u32> = vec![];
         let mut sum: u32 = 0;
         for line in lines {
