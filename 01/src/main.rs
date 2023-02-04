@@ -16,9 +16,7 @@ fn main() {
         let mut sum: u32 = 0;
         for line in lines {
             if let Ok(value) = line {
-                println!("{}", value);
                 if value == "" {
-                    println!("sum: {}", sum);
                     sums.push(sum);
                     sum = 0;
                     continue;
