@@ -43,14 +43,49 @@ fn main() {
                 let second_hand: String = v[1].to_string();
                 // lets handle draw first
                 match second_hand.as_str() {
-                    "X" => { // Lose
+                    "X" => {
+                        // Lose
+                        match first_hand.as_str() {
+                            "A" => {
+                                // if Rock (A) then we need to show Scissor (Z) in order to lose
+                                my_score2 += HAND_SCORES.get("Z").unwrap();
+                            }
+                            "B" => {
+                                // if Paper (B) then we need to show Rock (X) in order to lose
+                                my_score2 += HAND_SCORES.get("X").unwrap();
+                            }
+                            "C" => {
+                                // if Scissor (C) then we need to show Paper (Y) in order to lose
+                                my_score2 += HAND_SCORES.get("Y").unwrap();
+                            }
+                            _ => {}
+                        }
+                        // Lose give 0 points, no need to add anything else
                     }
                     "Y" => {
                         // Draw
                         my_score2 += GAME_END_SCORES.get("DRAW").unwrap();
                         my_score2 += HAND_SCORES.get(&first_hand.to_string()).unwrap();
                     }
-                    "Z" => {}
+                    "Z" => {
+                        // Win
+                        match first_hand.as_str() {
+                            "A" => {
+                                // need Paper (Y) to beat Rock (A)
+                                my_score2 += HAND_SCORES.get("Y").unwrap();
+                            }
+                            "B" => {
+                                // need Scissor (Z) to beat Paper (B)
+                                my_score2 += HAND_SCORES.get("Z").unwrap();
+                            }
+                            "C" => {
+                                // need Rock (X) to beat Scissor (C)
+                                my_score2 += HAND_SCORES.get("X").unwrap();
+                            }
+                            _ => {}
+                        }
+                        my_score2 += GAME_END_SCORES.get("WIN").unwrap();
+                    }
                     _ => {}
                 }
 
@@ -99,6 +134,7 @@ fn main() {
             }
         }
         println!("My score: {}", my_score);
+        println!("My 2nd score: {}", my_score2);
     }
 }
 
