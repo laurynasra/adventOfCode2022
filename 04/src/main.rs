@@ -40,9 +40,7 @@ fn main() {
                         count += 1;
                     }
 
-                    if vec1.iter().any(|n| vec2.contains(n))
-                        || vec2.iter().any(|n| vec1.contains(n))
-                    {
+                    if vec1.iter().any(|n| vec2.contains(n)) {
                         partial_count += 1;
                     }
                 }
