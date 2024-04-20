@@ -14,16 +14,14 @@ fn main() {
     if let Ok(lines) = read_lines(path) {
         let mut sums: Vec<u32> = vec![];
         let mut sum: u32 = 0;
-        for line in lines {
-            if let Ok(value) = line {
-                if value == "" {
-                    sums.push(sum);
-                    sum = 0;
-                    continue;
-                }
-                let parsed_value = value.parse::<u32>().unwrap();
-                sum = sum + parsed_value;
+        for line in lines.into_iter().flatten() {
+            if line.is_empty() {
+                sums.push(sum);
+                sum = 0;
+                continue;
             }
+            let parsed_value = line.parse::<u32>().unwrap();
+            sum += parsed_value;
         }
         sums.sort();
         sums.reverse();
