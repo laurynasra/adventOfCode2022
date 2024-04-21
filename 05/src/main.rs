@@ -17,10 +17,11 @@ fn main() {
     let re = Regex::new(r"(\w)").unwrap();
     if let Ok(lines) = read_lines(path) {
         for line in lines.into_iter().flatten() {
-            //if let Ok(value) = line {
-            if line.chars().nth(0).unwrap() == ' ' && line.chars().nth(1).unwrap() == '1' {
+            // Detects ending of the intial boxes configuration
+            if line.starts_with(' ') && line.chars().nth(1).unwrap() == '1' {
                 break;
             }
+
             println!("{}", line);
             let line_split = line
                 .chars()
@@ -30,6 +31,7 @@ fn main() {
                 .collect::<Vec<String>>();
 
             for (pos, split) in line_split.iter().enumerate() {
+                // Skip the empty spot in the boxes stash
                 if split == "    " {
                     continue;
                 }
@@ -39,11 +41,8 @@ fn main() {
                     return;
                 };
 
-                println!("'{}' at {}", split.to_string(), pos);
-                if !map.contains_key(&(pos as i32)) {
-                    let vec: Vec<char> = Vec::new();
-                    map.insert(pos as i32, vec);
-                }
+                println!("'{}' at {}", split, pos);
+                map.entry(pos as i32).or_default();
 
                 let _stash = map.get(&1).unwrap();
                 //stash.push('1'.to_string().chars().nth(0).unwrap());
@@ -70,7 +69,6 @@ fn main() {
             //     };
             //     println!("{} {}", letter.get(1).unwrap().as_str().to_string(), index);
             // }
-            //}
         }
     }
 }
