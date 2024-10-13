@@ -17,6 +17,7 @@ fn main() {
     let box_letter_regex = Regex::new(r"(\w)").unwrap();
     let mut lines = read_lines(path).unwrap();
     for line in lines.by_ref().flatten() {
+
         // Detects ending of the intial boxes configuration by finding " 1" string
         if line.starts_with(" 1") {
             break;
@@ -34,30 +35,49 @@ fn main() {
                 continue;
             }
             let m = box_letter_regex.captures(split).unwrap();
-            let vec = match map.get_mut(&pos) {
+            let adjusted_pos: usize = pos + 1;
+            let vec = match map.get_mut(&adjusted_pos) {
                 Some(v) => v,
                 None => {
                     let v: Vec<String> = Vec::new();
-                    map.insert(pos, v);
-                    map.get_mut(&pos).unwrap()
+                    map.insert(adjusted_pos, v);
+                    map.get_mut(&adjusted_pos).unwrap()
                 }
             };
-            vec.push(m[0].to_string());
+            vec.insert(0, m[0].to_string());
         }
     }
-    let vec = Some(map).unwrap();
-    println!("{:?}", vec.get(&0_usize).unwrap());
-    let direction_regex = Regex::new(r"(\d)").unwrap();
-    for line in lines.flatten() {
-        println!("{:?}", line.to_string());
+
+    let direction_regex = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
+    for line in lines.skip(1).flatten() {
         if line.eq("") {
             continue;
         }
-        let ds = direction_regex.captures(line.as_str()).unwrap();
-        println!("{:?}", ds);
-        break;
+        for caps in direction_regex.captures_iter(line.as_str()) {
+            let mut count: i32 = caps.get(1).unwrap().as_str().to_string().parse().unwrap();
+            let from: usize = caps.get(2).unwrap().as_str().parse().unwrap();
+            let to: usize = caps.get(3).unwrap().as_str().parse().unwrap();
+            /* part 1
+            while count > 0 {
+                let popped = map.get_mut(&from).unwrap().pop();
+                map.get_mut(&to).unwrap().push(popped.unwrap().to_string());
+                count = count - 1;
+            }
+            */
+            // part 2
+            let mut new_stack: Vec<String> = Vec::new();
+            while count > 0 {
+                let popped = map.get_mut(&from).unwrap().pop().unwrap();
+                new_stack.push(popped);
+                count -= 1;
+            }
+            new_stack.reverse();
+            map.get_mut(&to).unwrap().append(&mut new_stack);
+        }
     }
-    //  start moving box
+    for i in 1..=map.values().count() {
+        print!("{:?}", map.get(&i).unwrap().last().unwrap());
+    }
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
