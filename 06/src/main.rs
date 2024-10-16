@@ -4,7 +4,6 @@ use std::io::{self, BufRead};
 use std::fs::File;
 use std::path::Path;
 use std::collections::HashSet;
-use std::str::Chars;
 use itertools::Itertools;
 
 #[derive(Parser, Debug)]
