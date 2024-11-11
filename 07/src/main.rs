@@ -35,7 +35,7 @@ impl Folder {
             files: vec![],
         }))
     }
-    
+
     fn new_with_parent(name: &str, parent: &Rc<RefCell<Folder>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Folder {
             name: name.to_string(),
@@ -44,22 +44,22 @@ impl Folder {
             files: vec![],
         }))
     }
-    
+
     fn add_file(&mut self, name: &str, size: u64) {
         self.files.push(ElfFile {
             name: name.to_string(),
             size,
         })
     }
-    
+
     fn add_subfolder(&mut self, subfolder: Rc<RefCell<Folder>>) {
         self.subfolders.push(subfolder);
     }
-    
+
     fn get_parent(&self) -> Option<Rc<RefCell<Folder>>> {
         self.parent.as_ref().and_then(Weak::upgrade)
     }
-    
+
     fn find_subfolder(&self, name: &str) -> Option<Rc<RefCell<Folder>>> {
         for subfolder in &self.subfolders {
             if subfolder.borrow().name == name {
@@ -73,10 +73,10 @@ impl Folder {
 fn main() {
     let args = Args::parse();
     let path = args.path;
-    
+
     let root_folder = Folder::new_root("/");
     let mut current_folder = root_folder.clone();
-    
+
     let mut lines = read_lines(path).unwrap();
     for line in lines.by_ref().flatten().skip(1) {
         println!("Processing line {}; Current dir is {}", line, current_folder.borrow().name);
@@ -87,11 +87,23 @@ fn main() {
         if line.starts_with("dir") {
             store_dir(current_folder.clone(), line.clone());
         }
+        if line.chars().nth(0).unwrap().is_numeric() {
+            // if first char in line is a number - this is a file listing
+            store_file(current_folder.clone(), line.clone());
+        }
     }
 }
 
+fn store_file(folder: Rc<RefCell<Folder>>, line: String) {
+    let command_parase_r = Regex::new(r"(\d+) (\w+.?\w+)").unwrap();
+    let c = command_parase_r.captures(line.as_str()).unwrap();
+    let size: u64 = c[1].parse().expect("Failed to parse a file size");
+    let name = c[2].to_string();
+    println!("Adding file {}; Size {} to folder {}", line, size, folder.borrow().name);
+    folder.borrow_mut().add_file(&name.to_string(), size);
+}
+
 fn store_dir(folder: Rc<RefCell<Folder>>, line: String) {
-    
     let command_parase_r = Regex::new(r"dir (\w+)").unwrap();
     let c = command_parase_r.captures(line.as_str()).unwrap();
     let dir_name = &c[1];
