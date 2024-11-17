@@ -68,6 +68,30 @@ impl Folder {
         }
         None
     }
+
+    fn total_size(&self) -> u64 {
+        let file_sizes: u64 = self.files.iter().map(|f| f.size).sum();
+        let subfolder_size: u64 = self.subfolders.iter()
+            .map(|folder| folder.borrow().total_size()).sum();
+        file_sizes + subfolder_size
+    }
+
+    fn find_folders_by_size(folder: Rc<RefCell<Self>>, size: u64) -> Vec<Rc<RefCell<Folder>>> {
+        let mut result = Vec::new();
+        let folder_ref = folder.borrow();
+
+        // if folder_ref.total_size() < size {
+        // part2
+        if folder_ref.total_size() >= size {
+            result.push(Rc::clone(&folder));
+        }
+
+        for subfolder in &folder_ref.subfolders {
+            result.extend(Self::find_folders_by_size(Rc::clone(subfolder), size));
+        }
+
+        result
+    }
 }
 
 fn main() {
@@ -79,7 +103,7 @@ fn main() {
 
     let mut lines = read_lines(path).unwrap();
     for line in lines.by_ref().flatten().skip(1) {
-        println!("Processing line {}; Current dir is {}", line, current_folder.borrow().name);
+        // println!("Processing line {}; Current dir is {}", line, current_folder.borrow().name);
         if line.starts_with("$") {
             current_folder = execute_command(&line, current_folder.clone());
         }
@@ -92,6 +116,31 @@ fn main() {
             store_file(current_folder.clone(), line.clone());
         }
     }
+
+    // let small_folders= Folder::find_folders_by_size(root_folder.clone(), 100000);
+    // let sum = small_folders.iter().fold(0, |acc, folder| acc + folder.borrow().total_size());
+    // for f in small_folders.iter() {
+    //     println!("Folder {} with size {}", f.borrow().name, f.borrow().total_size());
+    // }
+    // println!("Total sum: {}", sum);
+
+    // part 2
+    let total_size = root_folder.borrow().total_size();
+    let free_space = 70000000 - total_size;
+    println!("Total size: {}, free space: {}", total_size, free_space);
+    let needed_space = 30000000 - free_space;
+    let small_folders= Folder::find_folders_by_size(root_folder.clone(), needed_space);
+    let mut smallest = total_size;
+    for f in small_folders.iter() {
+        let f_size = f.borrow().total_size();
+        if smallest > f_size {
+            println!("smallest was {}, will be {}", smallest, f_size);
+            smallest = f_size;
+        }
+        println!("Folder {} with size {}", f.borrow().name, f_size);
+    }
+    println!("Smallest folder: {}, total after delete {}", smallest, free_space + smallest);
+
 }
 
 fn store_file(folder: Rc<RefCell<Folder>>, line: String) {
@@ -99,7 +148,7 @@ fn store_file(folder: Rc<RefCell<Folder>>, line: String) {
     let c = command_parase_r.captures(line.as_str()).unwrap();
     let size: u64 = c[1].parse().expect("Failed to parse a file size");
     let name = c[2].to_string();
-    println!("Adding file {}; Size {} to folder {}", line, size, folder.borrow().name);
+    // println!("Adding file {}; Size {} to folder ", line, size);
     folder.borrow_mut().add_file(&name.to_string(), size);
 }
 
@@ -107,7 +156,7 @@ fn store_dir(folder: Rc<RefCell<Folder>>, line: String) {
     let command_parase_r = Regex::new(r"dir (\w+)").unwrap();
     let c = command_parase_r.captures(line.as_str()).unwrap();
     let dir_name = &c[1];
-    println!("Storing dir {}", dir_name);
+    // println!("Storing dir {}", dir_name);
     let subfolder1 = Folder::new_with_parent(dir_name, &folder);
     folder.borrow_mut().add_subfolder(subfolder1);
 }
@@ -119,7 +168,7 @@ fn execute_command(line: &str, current_folder: Rc<RefCell<Folder>>) -> Rc<RefCel
     let params = c.get(2).map_or("", |m| m.as_str());
     match cmd {
         "cd" => {
-            println!("Changing dir for {}", params.to_string());
+            // println!("Changing dir for {}", params.to_string());
             if params.to_string().eq("..") {
                 // go up
                 return current_folder.borrow().get_parent().unwrap()
@@ -129,7 +178,7 @@ fn execute_command(line: &str, current_folder: Rc<RefCell<Folder>>) -> Rc<RefCel
             current_folder.borrow().find_subfolder(params).unwrap()
         },
         _ => {
-            println!("Unknown command: {}", cmd);
+            // println!("Unknown command: {}", cmd);
             current_folder
         }
     }
