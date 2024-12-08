@@ -1,6 +1,5 @@
 use std::rc::{Rc, Weak};
 use std::cell::RefCell;
-use std::env::{current_dir, current_exe};
 use std::path::Path;
 use std::fs::File;
 use std::io::{self, BufRead};
