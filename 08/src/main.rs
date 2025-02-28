@@ -23,18 +23,97 @@ fn main() {
         tree_matrix.insert(i, heights_in_line);
         i += 1;
     }
-    let mut total_visible_count = 0;
-    for x in 0..tree_matrix.len() {
-        for y in 0..tree_matrix[x].len() {
-            if is_visible(x, y, tree_matrix.clone()) == true {
-                total_visible_count += 1;
+    // let mut total_visible_count = 0;
+    // for x in 0..tree_matrix.len() {
+    //     for y in 0..tree_matrix[x].len() {
+    //         if is_visible(x, y, tree_matrix.clone()) == true {
+    //             total_visible_count += 1;
+    //         }
+    //     }
+    // }
+    //
+    // println!("total visible_count: {}", total_visible_count);
+
+    // Part 2
+    let mut current_highest = 0;
+    for x in 0..tree_matrix[0].len() {
+        for y in 0..tree_matrix.len() {
+            let scenic_score = get_scenic_score(x, y, tree_matrix.clone());
+            println!("scenic_score at {}x{}: {}", x, y, scenic_score);
+            if scenic_score > current_highest {
+                current_highest = scenic_score;
             }
         }
     }
+    println!("highestg scenic_score {}", current_highest);
+}
 
-    println!("total visible_count: {}", total_visible_count);
+fn get_scenic_score(x: usize, y: usize, forest: Vec<Vec<u16>>) -> i32 {
+    score_top(x, y, &forest)
+        * score_bottom(x, y, &forest)
+        * score_left(x, y, &forest)
+        * score_right(x, y, &forest)
+}
 
-    // Part 2
+fn score_top(x: usize, y: usize, forest: &Vec<Vec<u16>>) -> i32 {
+    let tree_height = forest[x][y];
+    let mut score = 0;
+    for i in (0..x).rev() {
+        if tree_height > forest[i][y] {
+            score += 1;
+        }
+        if tree_height <= forest[i][y] {
+            score += 1;
+            break;
+        }
+    }
+    score
+}
+
+fn score_bottom(x: usize, y: usize, forest: &Vec<Vec<u16>>) -> i32 {
+    let tree_height = forest[x][y];
+    let mut score = 0;
+    for i in (x+1..forest.len()) {
+        if tree_height > forest[i][y] {
+            score += 1;
+        }
+        if tree_height <= forest[i][y] {
+            score += 1;
+            break;
+        }
+    }
+    score
+}
+
+fn score_left(x: usize, y: usize, forest: &Vec<Vec<u16>>) -> i32 {
+    let tree_height = forest[x][y];
+    let mut score = 0;
+    for i in (0..y).rev() {
+        if tree_height > forest[x][i] {
+            score += 1;
+        }
+        if tree_height <= forest[x][i] {
+            score += 1;
+            break;
+        }
+    }
+    // println!("score for {}x{} is {}", x, y, score);
+    score
+}
+
+fn score_right(x: usize, y: usize, forest: &Vec<Vec<u16>>) -> i32 {
+    let tree_height = forest[x][y];
+    let mut score = 0;
+    for i in (y+1..forest[x].len()) {
+        if tree_height > forest[x][i] {
+            score += 1;
+        }
+        if tree_height <= forest[x][i] {
+            score += 1;
+            break;
+        }
+    }
+    score
 }
 
 fn is_visible(x: usize, y: usize, forest: Vec<Vec<u16>>) -> bool {
@@ -72,7 +151,7 @@ fn is_visible_bottom(x: usize, y: usize, forest: Vec<Vec<u16>>) -> bool {
 fn is_visible_left(x: usize, y: usize, forest: Vec<Vec<u16>>) -> bool {
     let mut is_visible = true;
     let target_height = forest[x][y];
-    for i in (0..y).rev() {
+    for i in (0..y).rev() { // TODO: possibly a bug?
         if (forest[x][i] >= target_height) {
             is_visible = false;
         }
