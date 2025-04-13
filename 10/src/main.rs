@@ -9,11 +9,11 @@ struct Args {
     path: String,
 }
 
-fn get_op_and_args(line: &str) -> (&str, i16) {
+fn get_op_and_args(line: &str) -> (&str, i8) {
     let s: Vec<&str> = line.split(' ').collect();
     match s.len() {
         2 => {
-            let arg:i16 = s[1].parse().unwrap();
+            let arg:i8 = s[1].parse().unwrap();
             return ("addx", arg);
         },
         1 => ("noop", 0),
@@ -29,34 +29,57 @@ fn main() {
     let mut cycle = 0;
     let mut x = 1;
     let checkpoints:Vec<i16> = vec![20, 60, 100, 140, 180, 220];
-    let mut signal_strengths= Vec::new();
+    let mut buffer:Vec<&str> = Vec::new();
+    // let mut signal_strengths= Vec::new();
     for line in lines.map_while(Result::ok) {
         let (op, arg) = get_op_and_args(&line);
         match op {
             "addx" => {
-                cycle += 1;
-                if checkpoints.contains(&cycle) {
-                    signal_strengths.push(cycle * x);
+                let mut a = "";
+                if (x + 2i8).abs_diff(cycle).lt(&2u8) {
+                    buffer.push("#");
+                } else {
+                    buffer.push(".");
                 }
+
+                // if checkpoints.contains(&cycle) {
+                //     signal_strengths.push(cycle * x);
+                // }
                 cycle += 1;
-                if checkpoints.contains(&cycle) {
-                    signal_strengths.push(cycle * x);
+                if (x + 2).abs_diff(cycle).lt(&2u8) {
+                    buffer.push("#");
+                } else {
+                    buffer.push(".");
                 }
+                // if checkpoints.contains(&cycle) {
+                //     signal_strengths.push(cycle * x);
+                // }
                 x += arg;
             }
             "noop" => {
                 cycle += 1;
-                if checkpoints.contains(&cycle) {
-                    signal_strengths.push(cycle * x);
+                if (x + 2).abs_diff(cycle).lt(&2u8) {
+                    buffer.push("#");
+                } else {
+                    buffer.push(".");
                 }
+                // if checkpoints.contains(&cycle) {
+                //     signal_strengths.push(cycle * x);
+                // }
             }
             _ => continue,
         }
-        println!("State after executing {} {}", op, arg);
-        println!("x={} cycle={}", x, cycle);
+        // println!("State after executing {} {}", op, arg);
+        // println!("x={} cycle={}", x, cycle);
     }
-    println!("Signal strengths={:?}", signal_strengths);
-    println!("Total signal strengths={:?}", signal_strengths.iter().sum::<i16>());
+    // for line in buffer.chunks(40)
+    //         .map(|c| c.iter().collect::<String>())
+    //         .collect::<Vec<String>>(){
+    //     println!("{}", line);
+    // }
+    println!("{:?}", buffer);
+    // println!("Signal strengths={:?}", signal_strengths);
+    // println!("Total signal strengths={:?}", signal_strengths.iter().sum::<i16>());
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
