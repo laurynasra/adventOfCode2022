@@ -22,7 +22,6 @@ fn get_op_and_args(line: &str) -> (&str, i16) {
 }
 
 fn main() {
-    println!("Hello, world!");
     let args = Args::parse();
     let path = args.path;
     let mut lines = read_lines(path).unwrap();
